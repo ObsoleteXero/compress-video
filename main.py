@@ -34,8 +34,8 @@ def get_length(filename: str) -> float:
     return float(result.stdout)
 
 
-def calculate_bitrate(filesize: float, duration: float) -> str:
-    v_br = round(filesize * 1024 * 8 / duration - 128)
+def calculate_bitrate(filesize: float, length: float) -> str:
+    v_br = round(filesize * 1024 * 8 / length - 128)
     return str(v_br) + "k"
 
 
@@ -45,7 +45,7 @@ def x265():
 
 
 def x264(filename: str, bitrate: str) -> None:
-    pass_one = subprocess.run(
+    pass_one = subprocess.Popen(
         [
             "ffmpeg",
             "-y",
@@ -66,6 +66,15 @@ def x264(filename: str, bitrate: str) -> None:
         stderr=subprocess.STDOUT,
     )
 
+    while True:
+        line = pass_one.stdout.readline().decode("utf8", errors="replace").strip()
+        if line == "":
+            print("First Pass: Complete")
+            break
+        if line.startswith('total_size='):
+            progress = round(int(line.lstrip('total_size=')) / (int(sys.argv[2]) * 1048576) * 100, 2)
+            print(f"First Pass: {progress}%", end='\r')
+
     pass_two = subprocess.Popen(
         [
             "ffmpeg",
@@ -75,13 +84,18 @@ def x264(filename: str, bitrate: str) -> None:
             "-c:v",
             "libx264",
             "-b:v",
-            "1639k",
+            bitrate,
             "-pass",
             "2",
             "-c:a",
             "aac",
             "-b:a",
             "128k",
+            "-progress",
+            "-",
+            "-nostats",
+            "-loglevel",
+            "error",
             "compressed_" + filename,
         ],
         stdout=subprocess.PIPE,
@@ -90,9 +104,13 @@ def x264(filename: str, bitrate: str) -> None:
 
     while True:
         line = pass_two.stdout.readline().decode("utf8", errors="replace").strip()
-        if line == "" and pass_two.poll() is not None:
+        if line == "":
+            print("Second Pass: Complete")
             break
-        print(line)
+        if line.startswith('total_size='):
+            progress = round(int(line.lstrip('total_size=')) / (int(sys.argv[2]) * 1048576) * 100, 2)
+            print(f"Second Pass: {progress}\%", end='\r')
+
 
 
 if __name__ == "__main__":
