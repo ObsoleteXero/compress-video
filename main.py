@@ -19,6 +19,8 @@ def main():
 
 
 class Compress:
+
+    null = 'NUL' if sys.platform == 'win32' else '/dev/null'
     def __init__(self, filename, target_size) -> None:
         self.filename = filename
         self.target_size = target_size
@@ -79,7 +81,7 @@ class Compress:
                 "-nostats",
                 "-loglevel",
                 "error",
-                "NUL",
+                self.null
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -115,7 +117,7 @@ class Compress:
                 "-nostats",
                 "-loglevel",
                 "error",
-                "compressed_" + self.filename,
+                "compressed_" + self.filename
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
