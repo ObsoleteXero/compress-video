@@ -3,10 +3,11 @@ import re
 import sys
 import subprocess
 
+
 def main():
     if len(sys.argv) != 3:
         print(f"Usage: {sys.argv[0]} input_file target_filesize")
-        return
+        sys.exit(2)
 
     # Check Inputs
     filename = sys.argv[1]
