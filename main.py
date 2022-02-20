@@ -138,7 +138,7 @@ class Compress:
                 "-nostats",
                 "-loglevel",
                 "error",
-                "compressed_" + self.filename,
+                "compressed_" + os.path.splitext(self.filename)[0] + ".mkv",
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
