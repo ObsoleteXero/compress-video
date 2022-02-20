@@ -1,26 +1,46 @@
-import subprocess
-import sys
+import os
 import re
-
+import sys
+import subprocess
 
 def main():
     if len(sys.argv) != 3:
-        print(f"Usage: {sys.argv[0]} input target_filesize(MB)")
+        print(f"Usage: {sys.argv[0]} input_file target_filesize")
         return
 
-    # TODO: Check inputs
-    # TODO: Filesize formats
-    # TODO: Check OS
+    # Check Inputs
     filename = sys.argv[1]
-    filesize = int(sys.argv[2])
+    filesize = parse_filesize(sys.argv[2])
+    if not filesize:
+        print("Invalid filesize")
+        sys.exit(2)
+    try:
+        if os.path.getsize(filename) / 1024 * 8 < filesize:
+            print("Invalid filesize")
+            sys.exit(1)
+    except OSError:
+        print("File not found")
+        sys.exit(1)
 
     ffcmd = Compress(filename, filesize)
     ffcmd.x264()
 
 
+def parse_filesize(filesize: str):
+    units = {"b": 1, "B": 8, "K": 1, "M": 1024, "G": 1048576, "None": 0.001}
+    size_input = re.search(r"^(\d+\.?\d*) ?([KMiG]*)(b)$", filesize, re.IGNORECASE)
+    if not size_input:
+        return False
+    kb = float(size_input.group(1))
+    kb *= units[size_input.group(2).upper() or "None"]
+    kb *= units[size_input.group(3)]
+    return kb
+
+
 class Compress:
 
-    null = 'NUL' if sys.platform == 'win32' else '/dev/null'
+    null = "NUL" if sys.platform == "win32" else "/dev/null"
+
     def __init__(self, filename, target_size) -> None:
         self.filename = filename
         self.target_size = target_size
@@ -50,7 +70,7 @@ class Compress:
         self.frames = (fps_1 // fps_2 + (fps_1 % fps_2 > 0)) * self.length
 
     def calculate_bitrate(self) -> None:
-        t_br = self.target_size * 1024 * 8 / self.length
+        t_br = self.target_size / self.length
         v_br = round(t_br * 0.75)
         a_br = round(t_br * 0.25)
         self.vbr = str(v_br) + "k"
@@ -81,7 +101,7 @@ class Compress:
                 "-nostats",
                 "-loglevel",
                 "error",
-                self.null
+                self.null,
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -117,7 +137,7 @@ class Compress:
                 "-nostats",
                 "-loglevel",
                 "error",
-                "compressed_" + self.filename
+                "compressed_" + self.filename,
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
