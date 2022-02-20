@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import re
 
 
 def main():
@@ -23,28 +24,28 @@ class Compress:
         self.target_size = target_size
 
     def get_info(self) -> None:
-        print("Gathering information...", end="\r")
         result = subprocess.run(
             [
                 "ffprobe",
-                "-count_frames",
                 "-select_streams",
                 "v:0",
                 "-v",
                 "error",
                 "-show_entries",
-                "stream=nb_read_frames : format=duration",
+                "stream=r_frame_rate : format=duration",
                 "-of",
                 "default=noprint_wrappers=1:nokey=1",
                 self.filename,
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
+            text=True,
         )
-        print("Gathering information... Complete")
-        frames, length = result.stdout.strip().splitlines()
-        self.frames = int(frames)
-        self.length = float(length)
+        # Process output from ffprobe to get video length and approximate no. of frames
+        fps_1, fps_2, self.length = (
+            float(i) for i in re.split(r"[\n/]", result.stdout.strip())
+        )
+        self.frames = (fps_1 // fps_2 + (fps_1 % fps_2 > 0)) * self.length
 
     def calculate_bitrate(self) -> None:
         t_br = self.target_size * 1024 * 8 / self.length
