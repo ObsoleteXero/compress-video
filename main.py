@@ -47,8 +47,11 @@ class Compress:
         self.length = float(length)
 
     def calculate_bitrate(self) -> None:
-        v_br = round(self.target_size * 1024 * 8 / self.length - 128)
-        self.br = str(v_br) + "k"
+        t_br = self.target_size * 1024 * 8 / self.length
+        v_br = round(t_br * 0.75)
+        a_br = round(t_br * 0.25)
+        self.vbr = str(v_br) + "k"
+        self.abr = str(a_br) + "k"
 
     def x264(self) -> None:
 
@@ -64,7 +67,7 @@ class Compress:
                 "-c:v",
                 "libx264",
                 "-b:v",
-                self.br,
+                self.vbr,
                 "-pass",
                 "1",
                 "-an",
@@ -99,13 +102,13 @@ class Compress:
                 "-c:v",
                 "libx264",
                 "-b:v",
-                self.br,
+                self.vbr,
                 "-pass",
                 "2",
                 "-c:a",
                 "aac",
                 "-b:a",
-                "128k",
+                self.abr,
                 "-progress",
                 "-",
                 "-nostats",
