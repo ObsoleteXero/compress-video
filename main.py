@@ -28,13 +28,14 @@ def main():
 
 
 def parse_filesize(filesize: str):
-    units = {"b": 1, "B": 8, "K": 1, "M": 1024, "G": 1048576, "None": 0.001}
+    """Convert target filesize to kibibits"""
+    units = {"B": 8, "K": 1, "M": 1024, "G": 1048576, "None": 0.001}
     size_input = re.search(r"^(\d+\.?\d*) ?([KMiG]*)(b)$", filesize, re.IGNORECASE)
     if not size_input:
         return False
     kb = float(size_input.group(1))
     kb *= units[size_input.group(2).upper() or "None"]
-    kb *= units[size_input.group(3)]
+    kb *= units[size_input.group(3).upper()]
     return kb
 
 
