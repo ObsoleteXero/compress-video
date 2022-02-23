@@ -56,8 +56,6 @@ class CV_GUI:
 
     def add_to_queue(self):
         self.queue.insert("", "end", None, values=(self.infile.get(), self.tsize.get(), self.outfile.get()))
-        self.infile.set('')
-        self.outfile.set('')
         
 
 
