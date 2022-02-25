@@ -4,15 +4,15 @@ from main import Compress, parse_filesize
 from tkinter import CENTER, E, N, S, StringVar, Tk, W, filedialog, ttk
 
 
-class CV_GUI:
-    def __init__(self, root) -> None:
-
-        root.title("Compress Video")
-        mainframe = ttk.Frame(root, padding="3 3 12 12")
+class CV_GUI(Tk):
+    def __init__(self) -> None:
+        super().__init__()
+        self.title("Compress Video")
+        mainframe = ttk.Frame(self, padding="3 3 12 12")
         mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-        root.columnconfigure(0, weight=1)
-        root.rowconfigure(0, weight=1)
-        reg = root.register(self.callback)
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+        reg = self.register(self.callback)
 
         self.infile = StringVar()
         self.tsize = StringVar()
@@ -107,7 +107,7 @@ class CV_GUI:
     def monitor_progress(self, queue_item) -> None:
         if self.thread.is_alive():
             self.queue.set(queue_item, "status", self.job.progress)
-            root.after(100, lambda: self.monitor_progress(queue_item))
+            self.after(100, lambda: self.monitor_progress(queue_item))
         else:
             self.queue.set(queue_item, "status", "Complete")
 
@@ -116,6 +116,6 @@ class CV_GUI:
         return True
 
 
-root = Tk()
-cv = CV_GUI(root)
-root.mainloop()
+if __name__ == "__main__":
+    cv = CV_GUI()
+    cv.mainloop()
