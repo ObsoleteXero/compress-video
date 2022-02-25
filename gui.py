@@ -1,3 +1,6 @@
+import threading
+from pathlib import Path
+from main import Compress, parse_filesize
 from tkinter import CENTER, E, N, S, StringVar, Tk, W, filedialog, ttk
 
 
@@ -9,24 +12,29 @@ class CV_GUI:
         mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
         root.columnconfigure(0, weight=1)
         root.rowconfigure(0, weight=1)
+        reg = root.register(self.callback)
 
         self.infile = StringVar()
         self.tsize = StringVar()
         self.outfile = StringVar()
 
         ttk.Label(mainframe, text="Input File:").grid(column=1, row=1, sticky=E)
-        ttk.Label(mainframe, textvariable=self.infile).grid(column=2, row=1, sticky=(W, E))
+        ttk.Label(mainframe, textvariable=self.infile).grid(
+            column=2, row=1, sticky=(W, E)
+        )
         ttk.Button(mainframe, text="Select", command=self.get_infile).grid(
             column=3, row=1, sticky=E
         )
 
         ttk.Label(mainframe, text="Target Filesize:").grid(column=1, row=2, sticky=E)
         size_entry = ttk.Entry(mainframe, width=7, textvariable=self.tsize)
+        size_entry.config(validate="key", validatecommand=(reg, "%P"))
         size_entry.grid(column=2, row=2, sticky=(W, E))
 
         ttk.Label(mainframe, text="Output File:").grid(column=1, row=3, sticky=E)
-        ofile_entry = ttk.Entry(mainframe, width=7, textvariable=self.outfile)
-        ofile_entry.grid(column=2, row=3, sticky=(W, E))
+        ttk.Label(mainframe, textvariable=self.outfile).grid(
+            column=2, row=3, sticky=(W, E)
+        )
         ttk.Button(mainframe, text="Select", command=self.get_outfile).grid(
             column=3, row=3, sticky=E
         )
@@ -51,16 +59,32 @@ class CV_GUI:
         self.queue.heading("status", text="Status", anchor=CENTER)
         self.queue.grid(column=1, columnspan=3, row=5, sticky=(W, E))
 
+        ttk.Button(
+            mainframe,
+            text="Start",
+            command=self.start,
+        ).grid(column=2, row=6, sticky=(W, E))
+
         for child in mainframe.winfo_children():
             child.grid_configure(padx=5, pady=5)
 
     def get_infile(self) -> None:
-        self.infile.set(filedialog.askopenfilename())
+        infile = Path(filedialog.askopenfilename())
+        self.infile.set(infile)
+        outfile = infile.parent.joinpath(f"compressed_{infile.stem}.mkv")
+        self.outfile.set(outfile)
 
     def get_outfile(self) -> None:
         pass
 
     def add_to_queue(self) -> None:
+        infile = self.infile.get()
+        tsize = self.tsize.get()
+        outfile = self.outfile.get()
+
+        if not all((infile, tsize, outfile)):
+            pass
+
         self.queue.insert(
             "",
             "end",
@@ -69,6 +93,27 @@ class CV_GUI:
         )
         self.infile.set("")
         self.outfile.set("")
+
+    def start(self) -> None:
+        for item in self.queue.get_children():
+            infile = self.queue.set(item, "infile")
+            tsize = parse_filesize(self.queue.set(item, "tsize"))
+            outfile = self.queue.set(item, "outfile")
+            self.job = Compress(infile, tsize, outfile)
+            self.thread = threading.Thread(target=self.job.x264)
+            self.thread.start()
+            self.monitor_progress(item)
+
+    def monitor_progress(self, queue_item) -> None:
+        if self.thread.is_alive():
+            self.queue.set(queue_item, "status", self.job.progress)
+            root.after(100, lambda: self.monitor_progress(queue_item))
+        else:
+            self.queue.set(queue_item, "status", "Complete")
+
+    @staticmethod
+    def callback(input):
+        return True
 
 
 root = Tk()
