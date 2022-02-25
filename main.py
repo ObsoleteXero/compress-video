@@ -5,12 +5,13 @@ import subprocess
 
 
 def main():
-    if len(sys.argv) != 3:
+    if len(sys.argv) < 3:
         print(f"Usage: {sys.argv[0]} input_file target_filesize")
         sys.exit(2)
 
     # Check Inputs
     filename = sys.argv[1]
+    outfile = sys.argv[3]
     filesize = parse_filesize(sys.argv[2])
     if not filesize:
         print("Invalid filesize")
@@ -23,7 +24,7 @@ def main():
         print("File not found")
         sys.exit(1)
 
-    ffcmd = Compress(filename, filesize)
+    ffcmd = Compress(filename, filesize, outfile)
     ffcmd.x264()
 
 
@@ -43,10 +44,14 @@ class Compress:
 
     null = "NUL" if sys.platform == "win32" else "/dev/null"
 
-    def __init__(self, filename, target_size) -> None:
+    def __init__(self, filename, target_size, outfile=None) -> None:
         self.filename = filename
         self.target_size = target_size
         self.progress = ""
+        if not outfile:
+            self.outfile = f"compressed_{os.path.splitext(filename)[0]}.mkv"
+        else:
+            self.outfile = f"{os.path.splitext(outfile)[0]}.mkv"
 
     def get_info(self) -> None:
         result = subprocess.run(
@@ -142,7 +147,7 @@ class Compress:
                 "-nostats",
                 "-loglevel",
                 "error",
-                "compressed_" + os.path.splitext(self.filename)[0] + ".mkv",
+                self.outfile
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
