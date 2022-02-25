@@ -46,6 +46,7 @@ class Compress:
     def __init__(self, filename, target_size) -> None:
         self.filename = filename
         self.target_size = target_size
+        self.progress = ""
 
     def get_info(self) -> None:
         result = subprocess.run(
@@ -112,11 +113,13 @@ class Compress:
         while True:
             line = pass_one.stdout.readline().decode("utf8", errors="replace").strip()
             if line == "":
-                print("First Pass: Complete")
+                self.progress = "First Pass: Complete"
+                print(self.progress)
                 break
             if line.startswith("frame="):
                 progress = round(int(line.lstrip("frame=")) / self.frames * 100, 2)
-                print(f"First Pass: {progress:.2f}%", end="\r")
+                self.progress = f"First Pass: {progress:.2f}%"
+                print(self.progress, end="\r")
 
         pass_two = subprocess.Popen(
             [
@@ -148,15 +151,13 @@ class Compress:
         while True:
             line = pass_two.stdout.readline().decode("utf8", errors="replace").strip()
             if line == "":
-                print("Second Pass: Complete")
+                self.progress = "Second Pass: Complete"
+                print(self.progress)
                 break
             if line.startswith("frame="):
                 progress = round(int(line.lstrip("frame=")) / self.frames * 100, 2)
-                print(f"Second Pass: {progress:.2f}%", end="\r")
-
-    def x265():
-        # TODO: x265
-        return
+                self.progress = f"Second Pass: {progress:.2f}%"
+                print(self.progress, end="\r")
 
 
 if __name__ == "__main__":
