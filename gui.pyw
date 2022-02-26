@@ -71,14 +71,19 @@ class CV_GUI(Tk):
         if infile:
             infile = Path(infile)
             self.infile.set(infile)
-            outfile = infile.parent.joinpath(f"compressed_{infile.stem}.mkv")
+            outfile = infile.with_name(f"compressed_{infile.stem}.mkv")
             self.outfile.set(outfile)
             self.button_add["state"] = NORMAL
         else:
             self.button_add["state"] = DISABLED
 
     def get_outfile(self) -> None:
-        pass
+        outfile = filedialog.asksaveasfilename(
+            defaultextension="mkv", filetypes=[("Matroska Media Container", "*.mkv")]
+        )
+        if outfile:
+            outfile = Path(outfile).with_suffix('.mkv')
+            self.outfile.set(outfile)
 
     def add_to_queue(self) -> None:
         infile = self.infile.get()
