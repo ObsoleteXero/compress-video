@@ -64,6 +64,7 @@ class CV_GUI(Tk):
         )
         self.button_start.grid(column=2, row=6, sticky=(W, E))
 
+        mainframe.pack()
         for child in mainframe.winfo_children():
             child.grid_configure(padx=5, pady=5)
 
@@ -75,7 +76,7 @@ class CV_GUI(Tk):
             outfile = infile.with_name(f"compressed_{infile.stem}.mkv")
             self.outfile.set(outfile)
             self.button_add["state"] = NORMAL
-        else:
+        elif not self.infile:
             self.button_add["state"] = DISABLED
 
     def get_outfile(self) -> None:
