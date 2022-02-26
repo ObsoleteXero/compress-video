@@ -1,7 +1,7 @@
 import threading
 from pathlib import Path
 from main import Compress, parse_filesize
-from tkinter import CENTER, E, N, S, StringVar, Tk, W, filedialog, ttk
+from tkinter import CENTER, E, N, S, StringVar, Tk, W, filedialog, ttk, DISABLED, NORMAL
 
 
 class CV_GUI(Tk):
@@ -39,11 +39,10 @@ class CV_GUI(Tk):
             column=3, row=3, sticky=E
         )
 
-        ttk.Button(
-            mainframe,
-            text="Add",
-            command=self.add_to_queue,
-        ).grid(column=2, row=4, sticky=(W, E))
+        self.button_add = ttk.Button(
+            mainframe, text="Add", command=self.add_to_queue, state=DISABLED
+        )
+        self.button_add.grid(column=2, row=4, sticky=(W, E))
 
         self.queue = ttk.Treeview(mainframe)
         self.queue["columns"] = ("infile", "tsize", "outfile", "status")
@@ -59,20 +58,24 @@ class CV_GUI(Tk):
         self.queue.heading("status", text="Status", anchor=CENTER)
         self.queue.grid(column=1, columnspan=3, row=5, sticky=(W, E))
 
-        ttk.Button(
-            mainframe,
-            text="Start",
-            command=self.start,
-        ).grid(column=2, row=6, sticky=(W, E))
+        self.button_start = ttk.Button(
+            mainframe, text="Start", command=self.start, state=DISABLED
+        )
+        self.button_start.grid(column=2, row=6, sticky=(W, E))
 
         for child in mainframe.winfo_children():
             child.grid_configure(padx=5, pady=5)
 
     def get_infile(self) -> None:
-        infile = Path(filedialog.askopenfilename())
-        self.infile.set(infile)
-        outfile = infile.parent.joinpath(f"compressed_{infile.stem}.mkv")
-        self.outfile.set(outfile)
+        infile = filedialog.askopenfilename()
+        if infile:
+            infile = Path(infile)
+            self.infile.set(infile)
+            outfile = infile.parent.joinpath(f"compressed_{infile.stem}.mkv")
+            self.outfile.set(outfile)
+            self.button_add["state"] = NORMAL
+        else:
+            self.button_add["state"] = DISABLED
 
     def get_outfile(self) -> None:
         pass
@@ -82,8 +85,8 @@ class CV_GUI(Tk):
         tsize = self.tsize.get()
         outfile = self.outfile.get()
 
-        if not all((infile, tsize, outfile)):
-            pass
+        if not all((infile, parse_filesize(tsize), outfile)):
+            return
 
         self.queue.insert(
             "",
@@ -93,20 +96,34 @@ class CV_GUI(Tk):
         )
         self.infile.set("")
         self.outfile.set("")
+        self.button_add["state"] = DISABLED
+        self.button_start["state"] = NORMAL
 
     def start(self) -> None:
+        self.button_start["state"] = DISABLED
+        self.button_add["state"] = DISABLED
         for item in self.queue.get_children():
-            infile = self.queue.set(item, "infile")
-            tsize = parse_filesize(self.queue.set(item, "tsize"))
-            outfile = self.queue.set(item, "outfile")
-            self.job = Compress(infile, tsize, outfile)
-            self.thread = threading.Thread(target=self.job.x264)
-            self.thread.start()
-            self.monitor_progress(item)
+            self.queue.set(item, "status", "Pending")
+        thread = threading.Thread(target=self.process_queue)
+        thread.start()
+
+    def process_queue(self) -> None:
+        for item in self.queue.get_children():
+            if self.queue.set(item, "status") == "Pending":
+                infile = self.queue.set(item, "infile")
+                tsize = parse_filesize(self.queue.set(item, "tsize"))
+                outfile = self.queue.set(item, "outfile")
+                self.task = Compress(infile, tsize, outfile)
+                self.thread = threading.Thread(target=self.task.x264)
+                self.thread.start()
+                self.monitor_progress(item)
+                self.thread.join()
+        self.button_add["state"] = NORMAL
+        self.button_start["state"] = NORMAL
 
     def monitor_progress(self, queue_item) -> None:
         if self.thread.is_alive():
-            self.queue.set(queue_item, "status", self.job.progress)
+            self.queue.set(queue_item, "status", self.task.progress)
             self.after(100, lambda: self.monitor_progress(queue_item))
         else:
             self.queue.set(queue_item, "status", "Complete")
