@@ -45,7 +45,7 @@ class CV_GUI(Tk):
         self.button_add.grid(column=2, row=4, sticky=(W, E))
 
         self.queue = ttk.Treeview(mainframe)
-        self.queue["columns"] = ("infile", "tsize", "outfile", "status")
+        self.queue["columns"] = ("infile", "inpath", "tsize", "outfile", "outpath", "status")
         self.queue.column("#0", width=1)
         self.queue.column("infile", anchor=CENTER, width=100)
         self.queue.column("tsize", anchor=CENTER, width=50)
@@ -56,6 +56,7 @@ class CV_GUI(Tk):
         self.queue.heading("tsize", text="Size", anchor=CENTER)
         self.queue.heading("outfile", text="Output Filename", anchor=CENTER)
         self.queue.heading("status", text="Status", anchor=CENTER)
+        self.queue["displaycolumns"] = ("infile", "tsize", "outfile", "status")
         self.queue.grid(column=1, columnspan=3, row=5, sticky=(W, E))
 
         self.button_start = ttk.Button(
@@ -97,7 +98,7 @@ class CV_GUI(Tk):
             "",
             "end",
             None,
-            values=(self.infile.get(), self.tsize.get(), self.outfile.get()),
+            values=(Path(infile).name, infile, tsize, Path(outfile).name, outfile),
         )
         self.infile.set("")
         self.outfile.set("")
@@ -115,9 +116,9 @@ class CV_GUI(Tk):
     def process_queue(self) -> None:
         for item in self.queue.get_children():
             if self.queue.set(item, "status") == "Pending":
-                infile = self.queue.set(item, "infile")
+                infile = self.queue.set(item, "inpath")
                 tsize = parse_filesize(self.queue.set(item, "tsize"))
-                outfile = self.queue.set(item, "outfile")
+                outfile = self.queue.set(item, "outpath")
                 self.task = Compress(infile, tsize, outfile)
                 self.thread = threading.Thread(target=self.task.x264)
                 self.thread.start()
