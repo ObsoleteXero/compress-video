@@ -45,7 +45,14 @@ class CV_GUI(Tk):
         self.button_add.grid(column=2, row=4, sticky=(W, E))
 
         self.queue = ttk.Treeview(mainframe)
-        self.queue["columns"] = ("infile", "inpath", "tsize", "outfile", "outpath", "status")
+        self.queue["columns"] = (
+            "infile",
+            "inpath",
+            "tsize",
+            "outfile",
+            "outpath",
+            "status",
+        )
         self.queue.column("#0", width=1)
         self.queue.column("infile", anchor=CENTER, width=100)
         self.queue.column("tsize", anchor=CENTER, width=50)
@@ -84,7 +91,7 @@ class CV_GUI(Tk):
             defaultextension="mkv", filetypes=[("Matroska Media Container", "*.mkv")]
         )
         if outfile:
-            outfile = Path(outfile).with_suffix('.mkv')
+            outfile = Path(outfile).with_suffix(".mkv")
             self.outfile.set(outfile)
 
     def add_to_queue(self) -> None:

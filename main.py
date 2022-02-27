@@ -4,30 +4,6 @@ import sys
 import subprocess
 
 
-def main():
-    if len(sys.argv) < 3:
-        print(f"Usage: {sys.argv[0]} input_file target_filesize")
-        sys.exit(2)
-
-    # Check Inputs
-    filename = sys.argv[1]
-    outfile = sys.argv[3]
-    filesize = parse_filesize(sys.argv[2])
-    if not filesize:
-        print("Invalid filesize")
-        sys.exit(2)
-    try:
-        if os.path.getsize(filename) / 1024 * 8 < filesize:
-            print("Invalid filesize")
-            sys.exit(1)
-    except OSError:
-        print("File not found")
-        sys.exit(1)
-
-    ffcmd = Compress(filename, filesize, outfile)
-    ffcmd.x264()
-
-
 def parse_filesize(filesize: str):
     """Convert target filesize to kibibits"""
     units = {"B": 8, "K": 1, "M": 1024, "G": 1048576, "None": 0.001}
@@ -163,7 +139,3 @@ class Compress:
                 progress = round(int(line.lstrip("frame=")) / self.frames * 100, 2)
                 self.progress = f"Second Pass: {progress:.2f}%"
                 print(self.progress, end="\r")
-
-
-if __name__ == "__main__":
-    main()
