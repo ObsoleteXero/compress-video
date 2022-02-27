@@ -42,7 +42,6 @@ def main():
 
         # Start
         ffcmd = Compress(infile, filesize, outfile)
-        print(f"-- Compressing {infile.name} --")
         ffcmd.x264()
 
     else:

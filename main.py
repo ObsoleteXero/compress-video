@@ -65,6 +65,8 @@ class Compress:
         self.get_info()
         self.calculate_bitrate()
 
+        print(f"-- Compressing {self.filename} --")
+
         pass_one = subprocess.Popen(
             [
                 "ffmpeg",
@@ -123,7 +125,7 @@ class Compress:
                 "-nostats",
                 "-loglevel",
                 "error",
-                self.outfile
+                self.outfile,
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
