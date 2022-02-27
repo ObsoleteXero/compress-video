@@ -1,7 +1,7 @@
 import os
 import re
-import sys
 import subprocess
+import sys
 
 
 def parse_filesize(filesize: str):
@@ -30,6 +30,7 @@ class Compress:
             self.outfile = f"{os.path.splitext(outfile)[0]}.mkv"
 
     def get_info(self) -> None:
+        """Get input file length and number of frames"""
         result = subprocess.run(
             [
                 "ffprobe",
@@ -54,6 +55,7 @@ class Compress:
         self.frames = (fps_1 // fps_2 + (fps_1 % fps_2 > 0)) * self.length
 
     def calculate_bitrate(self) -> None:
+        """Calculate target bitrate and store as valid ffmpeg argument"""
         t_br = self.target_size / self.length
         v_br = round(t_br * 0.75)
         a_br = round(t_br * 0.25)
