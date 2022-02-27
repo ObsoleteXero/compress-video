@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 from gui import CV_GUI
-from main import Compress
+from main import Compress, parse_filesize
 
 
 def main():
@@ -50,18 +50,6 @@ def main():
         print("Launching GUI")
         gui = CV_GUI()
         gui.mainloop()
-
-
-def parse_filesize(filesize: str):
-    """Convert target filesize to kibibits"""
-    units = {"B": 8, "K": 1, "M": 1024, "G": 1048576, "None": 0.001}
-    size_input = re.search(r"^(\d+\.?\d*) ?([KMiG]*)(b)$", filesize, re.IGNORECASE)
-    if not size_input:
-        return False
-    kb = float(size_input.group(1))
-    kb *= units[size_input.group(2).upper() or "None"]
-    kb *= units[size_input.group(3).upper()]
-    return kb
 
 
 if __name__ == "__main__":
