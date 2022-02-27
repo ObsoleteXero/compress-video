@@ -12,7 +12,6 @@ class CV_GUI(Tk):
         mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
-        reg = self.register(self.callback)
 
         self.infile = StringVar()
         self.tsize = StringVar()
@@ -28,7 +27,6 @@ class CV_GUI(Tk):
 
         ttk.Label(mainframe, text="Target Filesize:").grid(column=1, row=2, sticky=E)
         size_entry = ttk.Entry(mainframe, width=7, textvariable=self.tsize)
-        size_entry.config(validate="key", validatecommand=(reg, "%P"))
         size_entry.grid(column=2, row=2, sticky=(W, E))
 
         ttk.Label(mainframe, text="Output File:").grid(column=1, row=3, sticky=E)
@@ -141,10 +139,6 @@ class CV_GUI(Tk):
             self.after(100, lambda: self.monitor_progress(queue_item))
         else:
             self.queue.set(queue_item, "status", "Complete")
-
-    @staticmethod
-    def callback(input):
-        return True
 
 
 if __name__ == "__main__":
