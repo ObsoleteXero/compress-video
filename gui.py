@@ -1,7 +1,6 @@
 import threading
 from pathlib import Path
-from tkinter import (CENTER, DISABLED, NORMAL, E, N, S, StringVar, Tk, W,
-                     filedialog, ttk)
+from tkinter import CENTER, DISABLED, NORMAL, E, N, S, StringVar, Tk, W, filedialog, ttk
 
 from main import Compress, parse_filesize
 
@@ -124,7 +123,8 @@ class CV_GUI(Tk):
         self.button_start["state"] = DISABLED
         self.button_add["state"] = DISABLED
         for item in self.queue.get_children():
-            self.queue.set(item, "status", "Pending")
+            if self.queue.set(item, "status") != "Complete":
+                self.queue.set(item, "status", "Pending")
         thread = threading.Thread(target=self.process_queue)
         thread.start()
 
