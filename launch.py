@@ -6,41 +6,51 @@ from pathlib import Path
 from gui import CV_GUI
 from main import Compress
 
+
 def main():
-    
-    # Launch GUI
-    if len(sys.argv) == 1:
-        print("Lauching GUI")
-        gui = CV_GUI()
-        gui.mainloop()
-    
+
     # Launch CLI
-    elif len(sys.argv) == 3:
-        filename = sys.argv[1]
-        filesize = parse_filesize(sys.argv[2])
-        if not filesize:
-            print("Invalid filesize")
-            sys.exit(2)
+    if len(sys.argv) in (3, 4):
+
+        infile = Path(sys.argv[2])
+        # Get size of input file and exit if it does not exist
         try:
-            if os.path.getsize(filename) / 1024 * 8 < filesize:
-                print("Invalid filesize")
-                sys.exit(1)
+            infile_size = os.path.getsize(infile) / 1024 * 8
         except OSError:
-            print("File not found")
+            print("File not found.")
             sys.exit(1)
 
         try:
-            outfile = Path(sys.argv[3]).with_suffix('.mkv')
-        except IndexError:
-            outfile = Path(filename).with_suffix('.mkv')
+            # Determine target filesize if given as a factor
+            filesize = float(sys.argv[1])
+            if 0 < filesize < 1:
+                filesize *= infile_size
+            else:
+                raise ValueError
+        except ValueError:
+            # Determine target filesize if given directly
+            filesize = parse_filesize(sys.argv[1])
+            if not filesize or filesize >= infile_size:
+                print("Invalid filesize")
+                sys.exit(1)
 
-        ffcmd = Compress(filename, filesize, outfile)
-        print(f"-- Compressing {filename} --")
+        # Set output filename to default if not given
+        try:
+            outfile = Path(sys.argv[3]).with_suffix(".mkv")
+        except IndexError:
+            outfile = infile.with_name(f"compressed_{infile.name}").with_suffix(".mkv")
+
+        # Start
+        ffcmd = Compress(infile, filesize, outfile)
+        print(f"-- Compressing {infile.name} --")
         ffcmd.x264()
 
     else:
-        print(f"Usage: {sys.argv[0]} filename filesize")
-        sys.exit(2)
+        # Launch GUI
+        print("Launching GUI")
+        gui = CV_GUI()
+        gui.mainloop()
+
 
 def parse_filesize(filesize: str):
     """Convert target filesize to kibibits"""
@@ -54,7 +64,5 @@ def parse_filesize(filesize: str):
     return kb
 
 
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
