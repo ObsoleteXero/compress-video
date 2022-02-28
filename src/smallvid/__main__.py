@@ -2,8 +2,8 @@ import os
 import sys
 from pathlib import Path
 
-from gui import CV_GUI
-from main import Compress, parse_filesize
+from smallvid.gui import CV_GUI
+from smallvid.main import Compress, parse_filesize
 
 
 def main():
