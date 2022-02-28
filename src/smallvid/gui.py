@@ -2,8 +2,7 @@ import threading
 from pathlib import Path
 from tkinter import CENTER, DISABLED, NORMAL, E, N, S, StringVar, Tk, W, filedialog, ttk
 
-from main import Compress, parse_filesize
-
+from smallvid.main import Compress, parse_filesize
 
 class CV_GUI(Tk):
     def __init__(self) -> None:
