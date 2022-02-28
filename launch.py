@@ -33,14 +33,8 @@ def main():
                 print("Invalid filesize")
                 sys.exit(1)
 
-        # Set output filename to default if not given
-        try:
-            outfile = Path(sys.argv[3]).with_suffix(".mkv")
-        except IndexError:
-            outfile = infile.with_name(f"compressed_{infile.name}").with_suffix(".mkv")
-
         # Start
-        ffcmd = Compress(infile, filesize, outfile)
+        ffcmd = Compress(infile, filesize)
         ffcmd.x264()
 
     else:
