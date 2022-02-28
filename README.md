@@ -17,5 +17,5 @@ python3 launch.py
 Opens GUI if no arguments are provided
 
 ## Requirements
-- Python 3.7+
+- Python 3.6+
 - ffmpeg
