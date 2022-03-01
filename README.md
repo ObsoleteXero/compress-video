@@ -4,7 +4,7 @@ Video track is encoded using libx264 and audio with aac, with the total bitrate 
 
 ## Installation
 ```
-py -m pip install --upgrade https://github.com/ObsoleteXero/compress-video/tarball/package
+py -m pip install --upgrade https://github.com/ObsoleteXero/compress-video/tarball/master
 ```
 ## Usage
 ### Command Line
