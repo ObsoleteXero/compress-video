@@ -33,8 +33,20 @@ def main():
                 print("Invalid filesize")
                 sys.exit(1)
 
+        try:
+            outfile = Path(sys.argv[4])
+            if outfile.exists():
+                while True:
+                    ans = input(f"Output file {outfile} exists. Replace? (Y/N)\n")
+                    if ans.upper in ("Y", "YES"):
+                        break
+                    else:
+                        sys.exit(0)
+        except IndexError:
+            outfile = None
+
         # Start
-        ffcmd = Compress(infile, filesize)
+        ffcmd = Compress(infile, filesize, outfile)
         ffcmd.x264()
 
     else:
