@@ -1,7 +1,7 @@
-import os
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 
 def parse_filesize(filesize: str):
@@ -20,14 +20,14 @@ class Compress:
 
     null = "NUL" if sys.platform == "win32" else "/dev/null"
 
-    def __init__(self, filename, target_size, outfile=None) -> None:
+    def __init__(self, filename: Path, target_size, outfile: Path = None) -> None:
         self.filename = filename
         self.target_size = target_size
         self.progress = ""
-        if not outfile:
-            self.outfile = f"compressed_{os.path.splitext(filename)[0]}.mkv"
+        if outfile:
+            self.outfile = outfile.with_suffix(".mkv")
         else:
-            self.outfile = f"{os.path.splitext(outfile)[0]}.mkv"
+            self.outfile = filename.with_name(f"compressed_{filename.stem}.mkv")
 
     def get_info(self) -> None:
         """Get input file length and number of frames"""
@@ -67,7 +67,7 @@ class Compress:
         self.get_info()
         self.calculate_bitrate()
 
-        print(f"-- Compressing {self.filename} --")
+        print(f"-- Compressing {self.filename.stem} --")
 
         pass_one = subprocess.Popen(
             [

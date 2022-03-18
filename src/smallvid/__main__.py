@@ -1,4 +1,3 @@
-import os
 import sys
 from pathlib import Path
 
@@ -14,7 +13,7 @@ def main():
         infile = Path(sys.argv[2])
         # Get size of input file and exit if it does not exist
         try:
-            infile_size = os.path.getsize(infile) / 1024 * 8
+            infile_size = infile.stat().st_size / 1024 * 8
         except OSError:
             print("File not found.")
             sys.exit(1)
@@ -34,7 +33,7 @@ def main():
                 sys.exit(1)
 
         try:
-            outfile = Path(sys.argv[4])
+            outfile = Path(sys.argv[3])
             if outfile.exists():
                 while True:
                     ans = input(f"Output file {outfile} exists. Replace? (Y/N)\n")

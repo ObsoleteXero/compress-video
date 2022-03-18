@@ -4,6 +4,7 @@ from tkinter import CENTER, DISABLED, NORMAL, E, N, S, StringVar, Tk, W, filedia
 
 from smallvid.main import Compress, parse_filesize
 
+
 class CV_GUI(Tk):
     def __init__(self) -> None:
         super().__init__()
@@ -130,9 +131,9 @@ class CV_GUI(Tk):
     def process_queue(self) -> None:
         for item in self.queue.get_children():
             if self.queue.set(item, "status") == "Pending":
-                infile = self.queue.set(item, "inpath")
+                infile = Path(self.queue.set(item, "inpath"))
                 tsize = parse_filesize(self.queue.set(item, "tsize"))
-                outfile = self.queue.set(item, "outpath")
+                outfile = Path(self.queue.set(item, "outpath"))
                 self.task = Compress(infile, tsize, outfile)
                 self.thread = threading.Thread(target=self.task.x264)
                 self.thread.start()
@@ -147,8 +148,3 @@ class CV_GUI(Tk):
             self.after(100, lambda: self.monitor_progress(queue_item))
         else:
             self.queue.set(queue_item, "status", "Complete")
-
-
-if __name__ == "__main__":
-    cv = CV_GUI()
-    cv.mainloop()
