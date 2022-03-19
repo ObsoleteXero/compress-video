@@ -8,6 +8,10 @@ from smallvid import utils
 
 def main():
 
+    if not utils.check_ffmpeg():
+        print("ffmpeg and/or ffprobe were not found; Program cannot continue.")
+        sys.exit(1)
+
     # Launch CLI
     if len(sys.argv) in (3, 4):
 

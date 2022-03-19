@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+from shutil import which
 from pathlib import Path
 
 devnull = os.devnull
@@ -27,3 +28,10 @@ def parse_filesize(filesize: str):
     kb *= units[size_input.group(2).upper() or "None"]
     kb *= units[size_input.group(3).upper()]
     return kb
+
+
+def check_ffmpeg():
+    """Check if ffmpeg and ffprobe are in PATH"""
+    if which("ffmpeg") and which("ffprobe"):
+        return True
+    return False
