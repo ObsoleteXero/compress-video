@@ -2,7 +2,8 @@ import sys
 from pathlib import Path
 
 from smallvid.gui import CV_GUI
-from smallvid.main import Compress, parse_filesize
+from smallvid.main import Compress
+from smallvid import utils
 
 
 def main():
@@ -27,7 +28,7 @@ def main():
                 raise ValueError
         except ValueError:
             # Determine target filesize if given directly
-            filesize = parse_filesize(sys.argv[1])
+            filesize = utils.parse_filesize(sys.argv[1])
             if not filesize or filesize >= infile_size:
                 print("Invalid filesize")
                 sys.exit(1)

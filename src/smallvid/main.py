@@ -1,25 +1,11 @@
 import re
 import subprocess
-import sys
 from pathlib import Path
 
-
-def parse_filesize(filesize: str):
-    """Convert target filesize to kibibits"""
-    units = {"B": 8, "K": 1, "M": 1024, "G": 1048576, "None": 0.001}
-    size_input = re.search(r"^(\d+\.?\d*) ?([KMiG]*)(b)$", filesize, re.IGNORECASE)
-    if not size_input:
-        return False
-    kb = float(size_input.group(1))
-    kb *= units[size_input.group(2).upper() or "None"]
-    kb *= units[size_input.group(3).upper()]
-    return kb
+from smallvid import utils
 
 
 class Compress:
-
-    null = "NUL" if sys.platform == "win32" else "/dev/null"
-
     def __init__(self, filename: Path, target_size, outfile: Path = None) -> None:
         self.filename = filename
         self.target_size = target_size
@@ -77,6 +63,8 @@ class Compress:
                 self.filename,
                 "-c:v",
                 "libx264",
+                "-passlogfile",
+                utils.temp,
                 "-b:v",
                 self.vbr,
                 "-pass",
@@ -89,7 +77,7 @@ class Compress:
                 "-nostats",
                 "-loglevel",
                 "error",
-                self.null,
+                utils.devnull,
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -114,6 +102,8 @@ class Compress:
                 self.filename,
                 "-c:v",
                 "libx264",
+                "-passlogfile",
+                utils.temp,
                 "-b:v",
                 self.vbr,
                 "-pass",
@@ -143,3 +133,5 @@ class Compress:
                 progress = round(int(line.lstrip("frame=")) / self.frames * 100, 2)
                 self.progress = f"Second Pass: {progress:.2f}%"
                 print(self.progress, end="\r")
+
+        utils.clean_logs()

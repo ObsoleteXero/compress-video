@@ -2,7 +2,8 @@ import threading
 from pathlib import Path
 from tkinter import CENTER, DISABLED, NORMAL, E, N, S, StringVar, Tk, W, filedialog, ttk
 
-from smallvid.main import Compress, parse_filesize
+from smallvid.main import Compress
+from smallvid import utils
 
 
 class CV_GUI(Tk):
@@ -105,7 +106,7 @@ class CV_GUI(Tk):
         tsize = self.tsize.get()
         outfile = self.outfile.get()
 
-        if not all((infile, parse_filesize(tsize), outfile)):
+        if not all((infile, utils.parse_filesize(tsize), outfile)):
             return
 
         self.queue.insert(
@@ -132,7 +133,7 @@ class CV_GUI(Tk):
         for item in self.queue.get_children():
             if self.queue.set(item, "status") == "Pending":
                 infile = Path(self.queue.set(item, "inpath"))
-                tsize = parse_filesize(self.queue.set(item, "tsize"))
+                tsize = utils.parse_filesize(self.queue.set(item, "tsize"))
                 outfile = Path(self.queue.set(item, "outpath"))
                 self.task = Compress(infile, tsize, outfile)
                 self.thread = threading.Thread(target=self.task.x264)
